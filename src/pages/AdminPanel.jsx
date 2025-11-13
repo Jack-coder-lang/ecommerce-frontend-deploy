@@ -10,13 +10,29 @@ import {
 } from 'lucide-react';
 
 export default function AdminPanel() {
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
   const [pendingUsers, setPendingUsers] = useState([]);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Debug
+  console.log('AdminPanel - user:', user);
+  console.log('AdminPanel - isAuthenticated:', isAuthenticated);
+
+  // Attendre que l'authentification soit chargée
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#e8cf3a] mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Vérifier si l'utilisateur est admin
   if (user?.role !== 'ADMIN') {
