@@ -9,6 +9,14 @@ export const useSocket = () => {
   const socketRef = useRef(null);
 
   useEffect(() => {
+    // ⚠️ Socket.IO désactivé en production Vercel (serverless ne supporte pas WebSockets)
+    const isVercelProduction = import.meta.env.VITE_API_URL?.includes('vercel.app');
+
+    if (isVercelProduction) {
+      console.log('ℹ️ Socket.IO désactivé (Vercel serverless)');
+      return;
+    }
+
     if (isAuthenticated && user) {
       // Ne créer qu'une seule instance de socket
       if (socketRef.current?.connected) {

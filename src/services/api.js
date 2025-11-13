@@ -29,9 +29,18 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error(`❌ API Error: ${error.response?.status} ${error.config?.url}`, error.message);
-    
-    if (error.response?.status === 401) {
+    const status = error.response?.status;
+    const url = error.config?.url;
+
+    // Ne pas logger les erreurs 403 pour les routes protégées quand non connecté
+    const isProtectedRoute = url?.includes('/cart') || url?.includes('/orders') || url?.includes('/notifications');
+    const isUnauthorized = status === 403 || status === 401;
+
+    if (!(isProtectedRoute && isUnauthorized)) {
+      console.error(`❌ API Error: ${status} ${url}`, error.message);
+    }
+
+    if (status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
