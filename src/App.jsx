@@ -2,6 +2,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useSocket } from './hooks/useSocket';
+import { useNotificationPolling } from './hooks/useNotificationPolling';
 
 // Layouts
 import Header from './components/Header';
@@ -46,6 +47,9 @@ export default function App() {
   } catch (error) {
     console.error('❌ Erreur dans useSocket:', error);
   }
+
+  // Polling des notifications (alternative à Socket.IO pour Vercel)
+  useNotificationPolling();
 
   return (
     <BrowserRouter>

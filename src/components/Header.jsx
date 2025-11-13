@@ -15,7 +15,8 @@ export default function Header() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const isConnected = socket?.connected;
+  // En production Vercel, pas de Socket.IO, donc utiliser isAuthenticated
+  const isConnected = socket?.connected || isAuthenticated;
 
   useEffect(() => {
     if (isAuthenticated) {

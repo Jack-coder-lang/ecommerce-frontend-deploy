@@ -21,12 +21,16 @@ export default function Login() {
     setLoading(true);
 
     try {
-      await login(formData);
+      const result = await login(formData);
       toast.success('Connexion réussie ! 🎉');
-      
+
       setTimeout(() => {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        if (user.role === 'SELLER') {
+        const user = result.user || JSON.parse(localStorage.getItem('user') || '{}');
+
+        // Redirection selon le rôle
+        if (user.role === 'ADMIN') {
+          navigate('/admin');
+        } else if (user.role === 'SELLER') {
           navigate('/seller/dashboard');
         } else {
           navigate('/');
