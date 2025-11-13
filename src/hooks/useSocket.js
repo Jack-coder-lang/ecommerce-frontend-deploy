@@ -77,7 +77,7 @@ export const useSocket = () => {
 
       socket.on('order-status-update', (data) => {
         console.log('📦 Mise à jour commande:', data);
-        
+
         const statusEmojis = {
           PENDING: '⏳',
           PROCESSING: '📦',
@@ -86,12 +86,34 @@ export const useSocket = () => {
           CANCELLED: '❌',
         };
 
-        toast(`${statusEmojis[data.status]} Commande #${data.orderNumber} - ${data.status}`, {
+        const statusLabels = {
+          PENDING: 'En attente',
+          PROCESSING: 'En préparation',
+          SHIPPED: 'Expédiée',
+          DELIVERED: 'Livrée',
+          CANCELLED: 'Annulée',
+        };
+
+        toast(`${statusEmojis[data.status]} Commande #${data.orderNumber} - ${statusLabels[data.status]}`, {
           duration: 6000,
         });
-        
+
         // Déclencher un événement pour recharger les commandes
         window.dispatchEvent(new Event('order-update'));
+        window.dispatchEvent(new CustomEvent('order-detail-update', { detail: data }));
+      });
+
+      socket.on('tracking-update', (data) => {
+        console.log('📍 Mise à jour position:', data);
+
+        if (data.currentLocation) {
+          toast(`📍 Votre colis est maintenant à ${data.currentLocation}`, {
+            duration: 8000,
+          });
+        }
+
+        // Déclencher un événement pour recharger les détails de suivi
+        window.dispatchEvent(new CustomEvent('tracking-location-update', { detail: data }));
       });
 
       socket.on('payment-success', (data) => {
@@ -123,6 +145,7 @@ export const useSocket = () => {
         socket?.off('connect');
         socket?.off('new-notification');
         socket?.off('order-status-update');
+        socket?.off('tracking-update');
         socket?.off('payment-success');
         socket?.off('disconnect');
         socket?.off('connect_error');

@@ -3,10 +3,11 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ordersAPI } from '../services/api';
 import toast from 'react-hot-toast';
-import { 
-  ArrowLeft, Package, MapPin, CreditCard, Phone, Mail, 
-  Clock, CheckCircle, Truck, XCircle 
+import {
+  ArrowLeft, Package, MapPin, CreditCard, Phone, Mail,
+  Clock, CheckCircle, Truck, XCircle
 } from 'lucide-react';
+import TrackingTimeline from '../components/TrackingTimeline';
 
 export default function OrderDetail() {
   const { orderId } = useParams();
@@ -17,7 +18,28 @@ export default function OrderDetail() {
 
   useEffect(() => {
     fetchOrder();
-  }, [orderId]);
+
+    // Écouter les mises à jour en temps réel
+    const handleOrderUpdate = (event) => {
+      if (event.detail?.orderId === orderId || event.detail?.orderNumber === order?.orderNumber) {
+        console.log('🔄 Rechargement automatique suite à mise à jour Socket.IO');
+        fetchOrder();
+      }
+    };
+
+    const handleTrackingUpdate = () => {
+      console.log('📍 Rechargement automatique suite à mise à jour de position');
+      fetchOrder();
+    };
+
+    window.addEventListener('order-detail-update', handleOrderUpdate);
+    window.addEventListener('tracking-location-update', handleTrackingUpdate);
+
+    return () => {
+      window.removeEventListener('order-detail-update', handleOrderUpdate);
+      window.removeEventListener('tracking-location-update', handleTrackingUpdate);
+    };
+  }, [orderId, order?.orderNumber]);
 
   const fetchOrder = async () => {
     try {
@@ -110,24 +132,25 @@ export default function OrderDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-5xl">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
+      <div className="container mx-auto px-4 max-w-6xl">
         <button
           onClick={() => navigate('/orders')}
-          className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 mb-6"
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 font-semibold transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span className="text-sm">Retour aux commandes</span>
+          <ArrowLeft className="w-5 h-5" />
+          <span>Retour aux commandes</span>
         </button>
 
         {/* EN-TÊTE */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="flex items-start justify-between mb-4">
+        <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-200 p-8 mb-6">
+          <div className="flex items-start justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-semibold mb-2">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 Commande #{order.orderNumber}
               </h1>
-              <p className="text-sm text-gray-600">
+              <p className="text-gray-600 flex items-center gap-2">
+                <Clock className="w-4 h-4" />
                 Passée le {new Date(order.createdAt).toLocaleDateString('fr-FR', {
                   year: 'numeric',
                   month: 'long',
@@ -137,57 +160,21 @@ export default function OrderDetail() {
                 })}
               </p>
             </div>
-            <span className={`px-4 py-2 rounded-md text-sm font-medium ${getStatusColor(order.status)}`}>
-              {getStatusLabel(order.status)}
-            </span>
-          </div>
 
-          {/* TIMELINE DE STATUT */}
-          {order.status !== 'CANCELLED' && (
-            <div className="mt-8">
-              <div className="flex items-center justify-between">
-                {getStatusSteps().map((step, index) => {
-                  const Icon = step.icon;
-                  return (
-                    <div key={step.key} className="flex-1 relative">
-                      <div className="flex flex-col items-center">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          step.completed ? 'bg-gray-800' : 'bg-gray-200'
-                        }`}>
-                          <Icon className={`w-5 h-5 ${
-                            step.completed ? 'text-white' : 'text-gray-400'
-                          }`} />
-                        </div>
-                        <p className={`text-xs mt-2 text-center ${
-                          step.completed ? 'text-gray-900 font-medium' : 'text-gray-500'
-                        }`}>
-                          {step.label}
-                        </p>
-                      </div>
-                      {index < getStatusSteps().length - 1 && (
-                        <div className={`absolute top-5 left-1/2 w-full h-0.5 ${
-                          step.completed ? 'bg-gray-800' : 'bg-gray-200'
-                        }`} style={{ transform: 'translateY(-50%)' }} />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* BOUTON ANNULER */}
-          {order.status === 'PENDING' && (
-            <div className="mt-6">
+            {/* BOUTON ANNULER */}
+            {order.status === 'PENDING' && (
               <button
                 onClick={handleCancelOrder}
                 disabled={cancelling}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-3 bg-red-50 text-red-600 border-2 border-red-200 rounded-xl hover:bg-red-100 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {cancelling ? 'Annulation...' : 'Annuler la commande'}
               </button>
-            </div>
-          )}
+            )}
+          </div>
+
+          {/* NOUVEAU COMPOSANT DE SUIVI */}
+          <TrackingTimeline order={order} onRefresh={fetchOrder} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
