@@ -1,0 +1,348 @@
+/* ============================================ */
+/* DIRECTIVES TAILWIND (OBLIGATOIRES) */
+/* ============================================ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================ */
+/* VARIABLES CSS - PALETTE DE MARQUE */
+/* ============================================ */
+:root {
+  --brand-yellow: #e8cf3a;
+  --brand-gold: #f6cc0a;
+  --brand-black: #212020;
+  --brand-pink: #bd1762;
+  --brand-green: #6ba456;
+  --brand-cyan: #1aa2af;
+  --brand-magenta: #a62a63;
+  --brand-lime: #5db03e;
+  --brand-gray: #5a595a;
+}
+
+/* ============================================ */
+/* COMPOSANTS AVEC COULEURS DE MARQUE */
+/* ============================================ */
+@layer components {
+  .btn-primary {
+    @apply bg-gradient-to-r from-[#e8cf3a] to-[#f6cc0a] text-[#212020] px-6 py-3 rounded-lg font-semibold hover:from-[#f6cc0a] hover:to-[#e8cf3a] transition-all shadow-md hover:shadow-lg;
+  }
+
+  .btn-secondary {
+    @apply bg-[#5a595a] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#212020] transition-all shadow-md hover:shadow-lg;
+  }
+
+  .btn-accent {
+    @apply bg-gradient-to-r from-[#bd1762] to-[#a62a63] text-white px-6 py-3 rounded-lg font-semibold hover:from-[#a62a63] hover:to-[#bd1762] transition-all shadow-md hover:shadow-lg;
+  }
+
+  .card-brand {
+    @apply bg-white rounded-xl shadow-md p-6 border-2 border-[#e8cf3a]/20 hover:border-[#e8cf3a] hover:shadow-xl transition-all;
+  }
+
+  .input-brand {
+    @apply w-full px-4 py-3 border-2 border-[#e8cf3a]/30 rounded-lg focus:ring-2 focus:ring-[#e8cf3a] focus:border-[#e8cf3a] outline-none transition-all bg-white;
+  }
+
+  .badge-success {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-[#6ba456] text-white;
+  }
+
+  .badge-danger {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-[#bd1762] text-white;
+  }
+
+  .badge-primary {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-[#e8cf3a] text-[#212020];
+  }
+
+  .gradient-brand-primary {
+    @apply bg-gradient-to-r from-[#e8cf3a] to-[#f6cc0a];
+  }
+
+  .gradient-brand-rainbow {
+    @apply bg-gradient-to-r from-[#e8cf3a] via-[#1aa2af] to-[#bd1762];
+  }
+
+  .glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .glass-brand {
+    background: rgba(232, 207, 58, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(232, 207, 58, 0.2);
+  }
+
+  .shadow-brand {
+    box-shadow: 0 10px 30px rgba(232, 207, 58, 0.3);
+  }
+
+  .shadow-brand-lg {
+    box-shadow: 0 20px 60px rgba(232, 207, 58, 0.4);
+  }
+
+  .shadow-brand-pink {
+    box-shadow: 0 10px 30px rgba(189, 23, 98, 0.3);
+  }
+
+  .shadow-brand-green {
+    box-shadow: 0 10px 30px rgba(107, 164, 86, 0.3);
+  }
+
+  .card-hover {
+    transition: all 0.3s ease;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-5px);
+  }
+
+  .shine {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shine::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+  }
+
+  .shine:hover::before {
+    left: 100%;
+  }
+}
+
+/* ============================================ */
+/* COULEURS UTILITAIRES */
+/* ============================================ */
+@layer utilities {
+  .text-brand-yellow { color: #e8cf3a; }
+  .text-brand-gold { color: #f6cc0a; }
+  .text-brand-black { color: #212020; }
+  .text-brand-pink { color: #bd1762; }
+  .text-brand-green { color: #6ba456; }
+  .text-brand-cyan { color: #1aa2af; }
+
+  .bg-brand-yellow { background-color: #e8cf3a; }
+  .bg-brand-gold { background-color: #f6cc0a; }
+  .bg-brand-black { background-color: #212020; }
+  .bg-brand-pink { background-color: #bd1762; }
+  .bg-brand-green { background-color: #6ba456; }
+  .bg-brand-cyan { background-color: #1aa2af; }
+
+  .bg-brand-yellow-light { background-color: rgba(232, 207, 58, 0.1); }
+  .bg-brand-pink-light { background-color: rgba(189, 23, 98, 0.1); }
+  .bg-brand-green-light { background-color: rgba(107, 164, 86, 0.1); }
+  .bg-brand-cyan-light { background-color: rgba(26, 162, 175, 0.1); }
+
+  .border-brand-yellow { border-color: #e8cf3a; }
+  .border-brand-pink { border-color: #bd1762; }
+  .border-brand-cyan { border-color: #1aa2af; }
+}
+
+/* ============================================ */
+/* ANIMATIONS */
+/* ============================================ */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes blob {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slideInUp {
+  animation: slideInUp 0.6s ease-out;
+}
+
+.animate-slideInDown {
+  animation: slideInDown 0.6s ease-out;
+}
+
+.animate-fadeInScale {
+  animation: fadeInScale 0.5s ease-out;
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 1s ease-in-out infinite;
+}
+
+.animation-delay-200 {
+  animation-delay: 0.2s;
+}
+
+.animation-delay-300 {
+  animation-delay: 0.3s;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* ============================================ */
+/* SCROLLBAR PERSONNALISÉE */
+/* ============================================ */
+.scrollbar-brand::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-brand::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.scrollbar-brand::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #e8cf3a, #f6cc0a);
+  border-radius: 10px;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ============================================ */
+/* UTILITAIRES SUPPLÉMENTAIRES */
+/* ============================================ */
+.text-gradient-brand {
+  background: linear-gradient(135deg, #e8cf3a 0%, #f6cc0a 50%, #bd1762 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ============================================ */
+/* OPTIMISATIONS MOBILE */
+/* ============================================ */
+@supports(padding: max(0px)) {
+  .safe-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+  
+  .safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* Améliorations tactiles pour mobile */
+@media (max-width: 768px) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .btn-primary, button {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Empêcher le zoom sur les inputs */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Scroll doux pour mobile */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Optimisation des performances mobiles */
+.card-brand {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
