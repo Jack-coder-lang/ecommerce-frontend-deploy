@@ -1,6 +1,6 @@
 // frontend/src/pages/Checkout.jsx
 // VERSION AVEC COULEURS DE LA MARQUE INTÉGRÉES
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCartStore, useAuthStore } from '../store';
 import { ordersAPI, paymentAPI } from '../services/api';
@@ -16,6 +16,7 @@ export default function Checkout() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const retryAttemptedRef = useRef(false); // Track if we've already retried
 
   const [formData, setFormData] = useState({
     firstName: user?.firstName || '',
@@ -37,18 +38,39 @@ export default function Checkout() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Reset retry flag on new user-initiated submit
+    if (!loading) {
+      retryAttemptedRef.current = false;
+    }
+
     setLoading(true);
 
     try {
+      // Validation côté client
+      if (!cart || !cart.items || cart.items.length === 0) {
+        toast.error('Votre panier est vide');
+        navigate('/cart');
+        return;
+      }
+
+      // Vérifier que tous les produits ont un ID valide
+      const invalidItems = cart.items.filter(item => !item.product?.id);
+      if (invalidItems.length > 0) {
+        toast.error('Certains produits dans votre panier sont invalides');
+        console.error('Produits invalides:', invalidItems);
+        return;
+      }
+
       const shippingAddress = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        phone: formData.phone,
-        email: formData.email,
-        address: formData.address,
-        city: formData.city,
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        phone: formData.phone.trim(),
+        email: formData.email.trim(),
+        address: formData.address.trim(),
+        city: formData.city.trim(),
         commune: formData.commune,
-        instructions: formData.instructions,
+        instructions: formData.instructions.trim(),
       };
 
       const orderData = {
@@ -57,12 +79,17 @@ export default function Checkout() {
         items: cart.items.map(item => ({
           productId: item.product.id,
           quantity: item.quantity,
+          price: item.product.price, // Ajouter le prix pour éviter les erreurs backend
         })),
       };
+
+      console.log('📦 Données de commande envoyées:', orderData);
 
       // Créer la commande
       const response = await ordersAPI.create(orderData);
       const order = response.data.order;
+
+      console.log('✅ Commande créée avec succès:', order);
 
       // Si paiement par CinetPay (MOBILE_MONEY ou CARD)
       if (formData.paymentMethod === 'MOBILE_MONEY' || formData.paymentMethod === 'CARD') {
@@ -106,8 +133,19 @@ export default function Checkout() {
             navigate(`/orders/${order.id}`);
           }
         } catch (paymentError) {
+          toast.dismiss('payment-init');
           console.error('Erreur paiement CinetPay:', paymentError);
-          toast.error('Erreur lors de l\'initialisation du paiement. Commande créée en attente.');
+
+          // Handle 404 - CinetPay endpoint not implemented
+          if (paymentError.response?.status === 404) {
+            toast.error(
+              '⚠️ Le paiement en ligne CinetPay n\'est pas encore disponible. Votre commande a été créée avec le statut "En attente". Veuillez payer en espèces à la livraison.',
+              { duration: 8000 }
+            );
+          } else {
+            toast.error('Erreur lors de l\'initialisation du paiement. Commande créée en attente.');
+          }
+
           navigate(`/orders/${order.id}`);
         }
       } else {
@@ -118,17 +156,58 @@ export default function Checkout() {
       }
 
     } catch (error) {
-      console.error('Erreur checkout:', error);
+      console.error('❌ Erreur checkout:', error);
+      console.error('Détails de l\'erreur:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+      });
 
-      // 🔥 CORRECTION : Meilleure gestion d'erreurs
+      // 🔥 CORRECTION : Meilleure gestion d'erreurs avec retry logic pour 500
       if (error.response?.status === 500) {
-        toast.error('Erreur serveur. Veuillez réessayer dans quelques instants.');
+        const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Erreur serveur interne';
+
+        // Afficher plus de détails dans la console pour le débogage
+        console.error('📋 Détails de l\'erreur 500:', {
+          url: error.config?.url,
+          method: error.config?.method,
+          data: error.config?.data,
+          responseData: error.response?.data,
+        });
+
+        // Retry once if this is the first attempt
+        if (!retryAttemptedRef.current) {
+          retryAttemptedRef.current = true;
+          console.log('🔄 Nouvelle tentative après erreur 500...');
+          toast.loading('Nouvelle tentative...', { id: 'retry-500' });
+
+          // Wait 1.5 seconds before retrying
+          await new Promise(resolve => setTimeout(resolve, 1500));
+
+          // Retry the submit
+          toast.dismiss('retry-500');
+          return handleSubmit(e);
+        }
+
+        // If retry also failed, show error
+        toast.error(`Erreur serveur: ${errorMsg}. Veuillez réessayer plus tard ou contacter le support.`, {
+          duration: 6000,
+        });
+
+        // Reset retry flag for next attempt
+        retryAttemptedRef.current = false;
+      } else if (error.response?.status === 400) {
+        const errorMsg = error.response?.data?.message || 'Données de commande invalides';
+        toast.error(errorMsg);
+      } else if (error.response?.status === 404) {
+        toast.error('Service de commande non disponible. Veuillez contacter le support.');
       } else if (error.response?.data?.message) {
         toast.error(error.response.data.message);
       } else if (error.request) {
         toast.error('Serveur inaccessible. Vérifiez votre connexion internet.');
       } else {
-        toast.error('Erreur inattendue lors de la commande.');
+        toast.error('Erreur inattendue lors de la commande. Veuillez réessayer.');
       }
     } finally {
       setLoading(false);

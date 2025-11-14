@@ -18,6 +18,7 @@ export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchTerm, setSearchTerm] = useState('');
   const [authChecked, setAuthChecked] = useState(false);
+  const [endpointsMissing, setEndpointsMissing] = useState(false);
 
   // États pour les modals
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -40,17 +41,48 @@ export default function AdminPanel() {
     setLoading(true);
     try {
       const [statsRes, usersRes, pendingRes] = await Promise.all([
-        adminAPI.getStats(),
-        adminAPI.getUsers(),
-        adminAPI.getPendingUsers()
+        adminAPI.getStats().catch(err => {
+          // Silently handle 404 for missing endpoint
+          if (err.response?.status === 404) {
+            return { data: { stats: {}, recentUsers: [] } };
+          }
+          throw err;
+        }),
+        adminAPI.getUsers().catch(err => {
+          // Silently handle 404 for missing endpoint
+          if (err.response?.status === 404) {
+            return { data: { users: [] } };
+          }
+          throw err;
+        }),
+        adminAPI.getPendingUsers().catch(err => {
+          // Silently handle 404 for missing endpoint
+          if (err.response?.status === 404) {
+            return { data: { users: [] } };
+          }
+          throw err;
+        })
       ]);
 
       setStats(statsRes.data);
       setUsers(usersRes.data.users || []);
       setPendingUsers(pendingRes.data.users || []);
+
+      // Check if all endpoints returned 404 (backend not implemented)
+      const all404 = !statsRes.data.stats && !usersRes.data.users?.length && !pendingRes.data.users?.length;
+      if (all404) {
+        setEndpointsMissing(true);
+        toast.error('Les endpoints admin ne sont pas encore implémentés sur le backend', {
+          duration: 6000,
+          icon: '⚠️',
+        });
+      } else {
+        setEndpointsMissing(false);
+      }
     } catch (error) {
       console.error('Erreur chargement admin:', error);
-      toast.error('Erreur lors du chargement des données');
+      const errorMsg = error.response?.data?.message || error.response?.data?.error || 'Erreur lors du chargement des données';
+      toast.error(errorMsg, { duration: 5000 });
     } finally {
       setLoading(false);
     }
@@ -251,6 +283,23 @@ export default function AdminPanel() {
             </button>
           </div>
         </div>
+
+        {/* Warning Banner for Missing Endpoints */}
+        {endpointsMissing && (
+          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-4 mb-6 animate-fadeIn">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-yellow-900 mb-1">Fonctionnalités en développement</h3>
+                <p className="text-sm text-yellow-800">
+                  Les endpoints admin (<code className="bg-yellow-100 px-2 py-0.5 rounded">/api/admin/stats</code>,
+                  <code className="bg-yellow-100 px-2 py-0.5 rounded ml-1">/api/admin/users</code>) ne sont pas encore implémentés sur le backend.
+                  Cette page affichera des données une fois les endpoints créés.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Navigation par onglets */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 mb-6">
