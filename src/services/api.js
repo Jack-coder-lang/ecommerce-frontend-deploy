@@ -41,9 +41,20 @@ api.interceptors.response.use(
     }
 
     if (status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      // Éviter la boucle de redirection
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/login') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+
+        // Utiliser une seule redirection sans recharger la page complète
+        if (!window.__redirecting) {
+          window.__redirecting = true;
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 100);
+        }
+      }
     }
     return Promise.reject(error);
   }
@@ -83,6 +94,7 @@ export const notificationsAPI = {
   markAsRead: (id) => api.patch(`/notifications/${id}/read`),
   markAllAsRead: () => api.patch('/notifications/mark-all-read'),
   delete: (id) => api.delete(`/notifications/${id}`),
+  deleteAllRead: () => api.delete('/notifications/read'),
 };
 
 // API Orders
@@ -151,6 +163,11 @@ export const paymentAPI = {
   createApplePaySession: (data) => api.post('/payments/apple-pay/session', data),
   processApplePay: (data) => api.post('/payments/apple-pay/process', data),
   createGooglePaySession: (data) => api.post('/payments/google-pay/session', data),
+
+  // CinetPay
+  initializeCinetPay: (data) => api.post('/payments/cinetpay/initialize', data),
+  checkCinetPayStatus: (transactionId) => api.get(`/payments/cinetpay/check/${transactionId}`),
+  getPayments: (params = {}) => api.get('/payments', { params }),
 };
 
 // API Admin

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCartStore, useAuthStore } from '../store';
-import { ordersAPI } from '../services/api';
+import { ordersAPI, paymentAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { 
   MapPin, CreditCard, Package, ArrowLeft, Shield, Truck,
@@ -60,15 +60,66 @@ export default function Checkout() {
         })),
       };
 
+      // Créer la commande
       const response = await ordersAPI.create(orderData);
-      
-      toast.success('🎉 Commande créée avec succès !');
-      clearCart();
-      navigate(`/orders/${response.data.order.id}`);
+      const order = response.data.order;
+
+      // Si paiement par CinetPay (MOBILE_MONEY ou CARD)
+      if (formData.paymentMethod === 'MOBILE_MONEY' || formData.paymentMethod === 'CARD') {
+        try {
+          toast.loading('Initialisation du paiement...', { id: 'payment-init' });
+
+          // Initialiser le paiement CinetPay
+          const paymentResponse = await paymentAPI.initializeCinetPay({
+            orderId: order.id,
+            amount: Math.round(order.total), // Arrondir au franc près
+            currency: 'XOF',
+            channels: formData.paymentMethod === 'CARD' ? 'CREDIT_CARD' : 'MOBILE_MONEY',
+            customer: {
+              name: formData.lastName,
+              surname: formData.firstName,
+              email: formData.email,
+              phone: formData.phone || '+225000000000',
+              address: formData.address || 'Abidjan',
+              city: formData.city || 'Abidjan',
+              country: 'CI',
+              state: 'CI',
+              zipCode: '00225'
+            }
+          });
+
+          toast.dismiss('payment-init');
+
+          if (paymentResponse.data.success) {
+            // Sauvegarder les IDs pour vérification au retour
+            localStorage.setItem('pendingOrderId', order.id);
+            localStorage.setItem('pendingTransactionId', paymentResponse.data.data.transaction_id);
+
+            toast.success('Redirection vers le paiement...');
+
+            // Redirection vers la page de paiement CinetPay
+            setTimeout(() => {
+              window.location.href = paymentResponse.data.data.payment_url;
+            }, 500);
+          } else {
+            toast.error('Erreur lors de l\'initialisation du paiement');
+            navigate(`/orders/${order.id}`);
+          }
+        } catch (paymentError) {
+          console.error('Erreur paiement CinetPay:', paymentError);
+          toast.error('Erreur lors de l\'initialisation du paiement. Commande créée en attente.');
+          navigate(`/orders/${order.id}`);
+        }
+      } else {
+        // Paiement en espèces (CASH)
+        toast.success('🎉 Commande créée avec succès !');
+        clearCart();
+        navigate(`/orders/${order.id}`);
+      }
 
     } catch (error) {
       console.error('Erreur checkout:', error);
-      
+
       // 🔥 CORRECTION : Meilleure gestion d'erreurs
       if (error.response?.status === 500) {
         toast.error('Erreur serveur. Veuillez réessayer dans quelques instants.');
@@ -102,8 +153,8 @@ export default function Checkout() {
   const getPaymentMethodDescription = (method) => {
     const descriptions = {
       CASH: 'Payez en espèces lors de la réception de votre commande',
-      MOBILE_MONEY: 'Orange Money, MTN Money, Moov Money',
-      CARD: 'Paiement sécurisé par carte Visa ou Mastercard',
+      MOBILE_MONEY: 'Orange Money, MTN Money, Moov Money via CinetPay',
+      CARD: 'Paiement sécurisé par carte Visa ou Mastercard via CinetPay',
     };
     return descriptions[method] || '';
   };
