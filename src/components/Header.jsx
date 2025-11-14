@@ -8,7 +8,7 @@ import { notificationsAPI } from '../services/api';
 import logo from '../assets/logo.png';
 
 export default function Header() {
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated, logout, token } = useAuthStore();
   const { itemCount } = useCartStore();
   const navigate = useNavigate();
   const socket = useSocket();
@@ -19,10 +19,10 @@ export default function Header() {
   const isConnected = socket?.connected || isAuthenticated;
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && token) {
       fetchUnreadCount();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, token]);
 
   useEffect(() => {
     const handleNotificationUpdate = () => {
@@ -36,11 +36,19 @@ export default function Header() {
   }, []);
 
   const fetchUnreadCount = async () => {
+    // Ne pas faire de requête si pas authentifié OU pas de token
+    if (!isAuthenticated || !token) {
+      return;
+    }
+
     try {
       const response = await notificationsAPI.getUnreadCount();
       setUnreadCount(response.data.count);
     } catch (error) {
-      console.error('Erreur compteur notifications:', error);
+      // Ignorer les erreurs 401/403 silencieusement
+      if (error.response?.status !== 401 && error.response?.status !== 403) {
+        console.error('Erreur compteur notifications:', error);
+      }
     }
   };
 
@@ -55,10 +63,10 @@ export default function Header() {
         <div className="flex items-center justify-between h-20">
           {/* LOGO */}
           <Link to="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-            <img 
-              src={logo}  
-              alt="Logo"  
-              className="h-24 mt-8 ml-14 w-auto object-contain"
+            <img
+              src={logo}
+              alt="Logo"
+              className="h-16 w-auto object-contain"
             />
           </Link>
 
