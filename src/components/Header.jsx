@@ -66,7 +66,7 @@ export default function Header() {
             <img
               src={logo}
               alt="Logo"
-              className="h-16 w-auto object-contain"
+              className="h-24 mt-8 ml-14 w-auto object-contain"
             />
           </Link>
 
