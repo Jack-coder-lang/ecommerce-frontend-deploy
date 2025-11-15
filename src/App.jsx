@@ -16,6 +16,7 @@ import Register from './pages/Register';
 import Profile from './pages/Profile';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
+import PaymentSuccess from './pages/PaymentSuccess';
 import Orders from './pages/Orders';
 import OrderDetail from './pages/OrderDetail';
 import Notifications from './pages/Notifications';
@@ -70,6 +71,7 @@ export default function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/orders/:orderId" element={<OrderDetail />} />
             <Route path="/notifications" element={<Notifications />} />

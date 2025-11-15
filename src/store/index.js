@@ -1,57 +1,8 @@
 import { create } from 'zustand';
-import { authAPI, cartAPI, notificationsAPI } from '../services/api';
-import socketService from '../services/socket';
+import { cartAPI, notificationsAPI } from '../services/api';
 
-// Store d'authentification
-export const useAuthStore = create((set) => ({
-  user: JSON.parse(localStorage.getItem('user')) || null,
-  token: localStorage.getItem('token') || null,
-  isAuthenticated: !!localStorage.getItem('token'),
-
-  login: async (credentials) => {
-    const response = await authAPI.login(credentials);
-    const { user, token } = response.data;
-    
-    localStorage.setItem('user', JSON.stringify(user));
-    localStorage.setItem('token', token);
-    
-    set({ user, token, isAuthenticated: true });
-    
-    // Connecter Socket.IO
-    socketService.connect(user.id);
-    
-    return response.data;
-  },
-
-  register: async (userData) => {
-    const response = await authAPI.register(userData);
-    const { user, token } = response.data;
-    
-    localStorage.setItem('user', JSON.stringify(user));
-    localStorage.setItem('token', token);
-    
-    set({ user, token, isAuthenticated: true });
-    
-    // Connecter Socket.IO
-    socketService.connect(user.id);
-    
-    return response.data;
-  },
-
-  logout: () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    socketService.disconnect();
-    set({ user: null, token: null, isAuthenticated: false });
-  },
-
-  updateUser: (user) => {
-    localStorage.setItem('user', JSON.stringify(user));
-    set({ user });
-  },
-
-  setUser: (user) => set({ user }),
-}));
+// Ré-exporter le store d'authentification depuis authStore.js (qui utilise persist)
+export { useAuthStore } from './authStore';
 
 // Store du panier - CORRIGÉ
 export const useCartStore = create((set, get) => ({

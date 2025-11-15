@@ -16,8 +16,12 @@ api.interceptors.request.use(
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      // Log pour debugging
+      console.log(`🔄 API Call: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
+      console.log(`🔑 Token présent: ${token.substring(0, 20)}...`);
+    } else {
+      console.warn('⚠️ Aucun token trouvé dans localStorage');
     }
-    console.log(`🔄 API Call: ${config.baseURL}${config.url}`);
     return config;
   },
   (error) => Promise.reject(error)
@@ -72,7 +76,7 @@ export const authAPI = {
 export const productsAPI = {
   getAll: (params = {}) => api.get('/products', { params }),
   getById: (id) => api.get(`/products/${id}`),
-  getSellerProducts: () => api.get('/products/seller/my-products'),
+  getSellerProducts: () => api.get('/products/seller/products'), // 🔥 Corrigé: /seller/products au lieu de /seller/my-products
   create: (productData) => api.post('/products', productData),
   update: (id, productData) => api.put(`/products/${id}`, productData),
   delete: (id) => api.delete(`/products/${id}`),

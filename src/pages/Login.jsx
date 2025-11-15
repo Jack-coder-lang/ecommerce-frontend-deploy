@@ -21,18 +21,26 @@ export default function Login() {
     setLoading(true);
 
     try {
+      console.log('🔐 Tentative de connexion avec:', formData.email);
       const result = await login(formData);
+      console.log('✅ Connexion réussie, résultat:', result);
+
       toast.success('Connexion réussie ! 🎉');
 
       setTimeout(() => {
         const user = result.user || JSON.parse(localStorage.getItem('user') || '{}');
+        console.log('👤 User après login:', user);
+        console.log('🔑 Token stocké:', localStorage.getItem('token'));
 
         // Redirection selon le rôle
         if (user.role === 'ADMIN') {
+          console.log('🎯 Redirection vers /admin');
           navigate('/admin');
         } else if (user.role === 'SELLER') {
+          console.log('🎯 Redirection vers /seller/dashboard');
           navigate('/seller/dashboard');
         } else {
+          console.log('🎯 Redirection vers /');
           navigate('/');
         }
       }, 500);

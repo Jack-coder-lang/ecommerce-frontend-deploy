@@ -34,7 +34,11 @@ export const useAuthStore = create(
 
           const data = await response.json();
           const { user, token } = data;
-          
+
+          // Sauvegarder explicitement dans localStorage AVANT de set (pour le login)
+          localStorage.setItem('token', token);
+          localStorage.setItem('user', JSON.stringify(user));
+
           set({
             user,
             token,
@@ -43,14 +47,17 @@ export const useAuthStore = create(
             error: null,
           });
 
+          console.log('✅ Token sauvegardé (login):', token);
+          console.log('✅ User sauvegardé (login):', user);
+
           return data;
 
         } catch (error) {
-          console.error('Login error:', error);
-          
-          set({ 
-            loading: false, 
-            error: error.message || 'Erreur de connexion' 
+          console.error('❌ Login error:', error);
+
+          set({
+            loading: false,
+            error: error.message || 'Erreur de connexion'
           });
           throw error;
         }
@@ -77,7 +84,11 @@ export const useAuthStore = create(
 
           const data = await response.json();
           const { user, token } = data;
-          
+
+          // Sauvegarder explicitement dans localStorage AVANT de set
+          localStorage.setItem('token', token);
+          localStorage.setItem('user', JSON.stringify(user));
+
           set({
             user,
             token,
@@ -85,6 +96,9 @@ export const useAuthStore = create(
             loading: false,
             error: null,
           });
+
+          console.log('✅ Token sauvegardé (register):', token);
+          console.log('✅ User sauvegardé (register):', user);
 
           return data;
 
@@ -105,7 +119,11 @@ export const useAuthStore = create(
           window.socket.disconnect();
           window.socket = null;
         }
-        
+
+        // Nettoyer localStorage explicitement
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+
         set({
           user: null,
           token: null,
@@ -113,6 +131,8 @@ export const useAuthStore = create(
           loading: false,
           error: null,
         });
+
+        console.log('✅ Déconnecté et localStorage nettoyé');
       },
 
       clearError: () => {
