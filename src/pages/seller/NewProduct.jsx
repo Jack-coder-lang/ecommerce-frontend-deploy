@@ -26,7 +26,7 @@ export default function NewProduct() {
     description: '',
     price: '',
     stock: '',
-    category: 'ELECTRONICS',
+    category: 'Électronique',
     images: [''],
     weight: '',
     dimensions: {
@@ -78,19 +78,18 @@ export default function NewProduct() {
     }
   }, [formData.weight, formData.dimensions]);
 
+  // Catégories alignées avec le backend (src/constants/productAttributes.js)
   const categories = [
-    { value: 'ELECTRONICS', label: 'Électronique', icon: '📱' },
-    { value: 'CLOTHING', label: 'Vêtements', icon: '👕' },
-    { value: 'SHOES', label: 'Chaussures', icon: '👟' },
-    { value: 'BAGS', label: 'Sacs', icon: '👜' },
-    { value: 'ACCESSORIES', label: 'Accessoires', icon: '⌚' },
-    { value: 'CONTAINERS', label: 'Contenants', icon: '🥤' },
-    { value: 'FOOD', label: 'Alimentation', icon: '🍎' },
-    { value: 'BOOKS', label: 'Livres', icon: '📚' },
-    { value: 'SPORTS', label: 'Sport', icon: '⚽' },
-    { value: 'HOME', label: 'Maison', icon: '🏠' },
-    { value: 'BEAUTY', label: 'Beauté', icon: '💄' },
-    { value: 'TOYS', label: 'Jouets', icon: '🧸' },
+    { value: 'Électronique', label: 'Électronique', icon: '📱' },
+    { value: 'Vêtements', label: 'Vêtements', icon: '👕' },
+    { value: 'Maison', label: 'Maison & Jardin', icon: '🏠' },
+    { value: 'Beauté', label: 'Beauté & Cosmétiques', icon: '💄' },
+    { value: 'Sport', label: 'Sports & Loisirs', icon: '⚽' },
+    { value: 'Livres', label: 'Livres & Éducation', icon: '📚' },
+    { value: 'Jouets', label: 'Jouets & Enfants', icon: '🧸' },
+    { value: 'Automobile', label: 'Auto & Motos', icon: '🚗' },
+    { value: 'Alimentation', label: 'Alimentation', icon: '🍎' },
+    { value: 'Autre', label: 'Autre', icon: '📦' },
   ];
 
   const handleSubmit = async (e) => {
