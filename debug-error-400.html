@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Diagnostic Erreur 400 - Création Produit</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .section {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+        }
+        .section h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        .result {
+            background: #e3f2fd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .success {
+            background: #c8e6c9;
+            border-left-color: #4CAF50;
+        }
+        .error {
+            background: #ffcdd2;
+            border-left-color: #f44336;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px 10px 0;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .badge-approved {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+        .badge-pending {
+            background: #fff3cd;
+            color: #f57c00;
+        }
+        .badge-error {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        .highlight {
+            background: yellow;
+            padding: 2px 4px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Diagnostic Erreur 400</h1>
+        <p class="subtitle">Outil de diagnostic pour identifier la cause de l'erreur 400 lors de la création de produit</p>
+
+        <div class="section">
+            <h3>Étape 1: Vérification de l'Authentification</h3>
+            <button onclick="checkAuth()">Vérifier Mon Authentification</button>
+            <div id="authResult"></div>
+        </div>
+
+        <div class="section">
+            <h3>Étape 2: Test de Données Minimales</h3>
+            <p>Teste la création avec le minimum de données requises</p>
+            <button onclick="testMinimalProduct()">Tester Création Minimale</button>
+            <div id="minimalResult"></div>
+        </div>
+
+        <div class="section">
+            <h3>Étape 3: Test de Données Complètes</h3>
+            <p>Teste la création avec toutes les données</p>
+            <button onclick="testFullProduct()">Tester Création Complète</button>
+            <div id="fullResult"></div>
+        </div>
+
+        <div class="section">
+            <h3>Étape 4: Validation des Catégories</h3>
+            <button onclick="testCategories()">Tester Toutes les Catégories</button>
+            <div id="categoryResult"></div>
+        </div>
+
+        <div class="section error" id="errorAnalysis" style="display: none;">
+            <h3>🚨 Analyse de l'Erreur</h3>
+            <div id="errorDetails"></div>
+        </div>
+
+        <div class="section success" id="successAnalysis" style="display: none;">
+            <h3>✅ Diagnostic Réussi</h3>
+            <div id="successDetails"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://ecommerce-backend-deploy.vercel.app/api';
+
+        function showResult(elementId, content, type = 'result') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="${type}">${content}</div>`;
+        }
+
+        function showError(message, details) {
+            document.getElementById('errorAnalysis').style.display = 'block';
+            document.getElementById('errorDetails').innerHTML = `
+                <p><strong>Message:</strong> ${message}</p>
+                <pre class="result error">${JSON.stringify(details, null, 2)}</pre>
+            `;
+        }
+
+        function showSuccess(message, details) {
+            document.getElementById('successAnalysis').style.display = 'block';
+            document.getElementById('successDetails').innerHTML = `
+                <p><strong>Message:</strong> ${message}</p>
+                <pre class="result success">${JSON.stringify(details, null, 2)}</pre>
+            `;
+        }
+
+        async function checkAuth() {
+            showResult('authResult', '⏳ Vérification en cours...', 'result');
+
+            try {
+                const token = localStorage.getItem('token');
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+                let html = '<div class="result">';
+
+                // Vérifier token
+                if (!token) {
+                    html += '❌ <strong>Token manquant</strong><br>';
+                    html += '<span class="badge-error">NON CONNECTÉ</span><br>';
+                    html += '➡️ Veuillez vous connecter d\'abord<br><br>';
+                } else {
+                    html += '✅ <strong>Token présent</strong><br>';
+                    html += `<code>${token.substring(0, 50)}...</code><br><br>`;
+                }
+
+                // Vérifier user
+                if (!user || !user.id) {
+                    html += '❌ <strong>Utilisateur manquant</strong><br>';
+                    html += '<span class="badge-error">PAS DE DONNÉES USER</span><br><br>';
+                } else {
+                    html += '✅ <strong>Utilisateur trouvé</strong><br>';
+                    html += `<strong>ID:</strong> ${user.id}<br>`;
+                    html += `<strong>Email:</strong> ${user.email}<br>`;
+                    html += `<strong>Rôle:</strong> ${user.role}<br>`;
+
+                    // Vérifier statut
+                    if (user.status === 'APPROVED') {
+                        html += `<strong>Statut:</strong> <span class="badge-approved">${user.status}</span><br>`;
+                        html += '✅ <strong>Compte approuvé - Vous pouvez créer des produits</strong><br>';
+                    } else if (user.status === 'PENDING') {
+                        html += `<strong>Statut:</strong> <span class="badge-pending">${user.status}</span><br>`;
+                        html += '⚠️ <strong class="highlight">Compte en attente d\'approbation</strong><br>';
+                        html += '➡️ Vous devez faire approuver votre compte par un admin<br>';
+                        html += '➡️ Ouvrez <a href="/create-admin.html">create-admin.html</a> pour créer un admin<br>';
+                    } else {
+                        html += `<strong>Statut:</strong> <span class="badge-error">${user.status}</span><br>`;
+                    }
+                }
+
+                html += '</div>';
+                showResult('authResult', html);
+
+            } catch (error) {
+                showResult('authResult', `❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        async function testMinimalProduct() {
+            showResult('minimalResult', '⏳ Test en cours...', 'result');
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showResult('minimalResult', '❌ Vous devez être connecté', 'error');
+                return;
+            }
+
+            const minimalData = {
+                name: "Test Minimal",
+                description: "Test avec données minimales",
+                price: 1000,
+                stock: 1,
+                category: "ELECTRONICS",
+                images: ["https://via.placeholder.com/400"]
+            };
+
+            try {
+                console.log('📤 Test minimal - Données envoyées:', minimalData);
+
+                const response = await fetch(`${API_URL}/products`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(minimalData)
+                });
+
+                const data = await response.json();
+                console.log('📥 Réponse reçue:', data);
+
+                if (response.ok) {
+                    showResult('minimalResult', `
+                        <div class="success">
+                            ✅ <strong>Succès !</strong><br>
+                            Status: ${response.status}<br>
+                            Message: ${data.message || 'Produit créé'}<br>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `);
+                    showSuccess('Test minimal réussi', data);
+                } else {
+                    showResult('minimalResult', `
+                        <div class="error">
+                            ❌ <strong>Échec</strong><br>
+                            Status: ${response.status}<br>
+                            Message: ${data.message || data.error || 'Erreur inconnue'}<br>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `);
+                    showError(`Erreur ${response.status} sur test minimal`, data);
+                }
+            } catch (error) {
+                showResult('minimalResult', `
+                    <div class="error">
+                        ❌ Erreur réseau: ${error.message}
+                    </div>
+                `, 'error');
+                console.error('Erreur:', error);
+            }
+        }
+
+        async function testFullProduct() {
+            showResult('fullResult', '⏳ Test en cours...', 'result');
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showResult('fullResult', '❌ Vous devez être connecté', 'error');
+                return;
+            }
+
+            const fullData = {
+                name: "Test Complet avec Détails",
+                description: "Test avec toutes les données optionnelles incluses pour vérifier la compatibilité",
+                price: 15000,
+                stock: 10,
+                category: "ELECTRONICS",
+                images: ["https://via.placeholder.com/400", "https://via.placeholder.com/400x300"],
+                shippingFee: 1500,
+                weight: 2.5,
+                dimensions: {
+                    length: 30,
+                    width: 20,
+                    height: 10
+                }
+            };
+
+            try {
+                console.log('📤 Test complet - Données envoyées:', fullData);
+
+                const response = await fetch(`${API_URL}/products`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(fullData)
+                });
+
+                const data = await response.json();
+                console.log('📥 Réponse reçue:', data);
+
+                if (response.ok) {
+                    showResult('fullResult', `
+                        <div class="success">
+                            ✅ <strong>Succès !</strong><br>
+                            Status: ${response.status}<br>
+                            Message: ${data.message || 'Produit créé'}<br>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `);
+                    showSuccess('Test complet réussi', data);
+                } else {
+                    showResult('fullResult', `
+                        <div class="error">
+                            ❌ <strong>Échec</strong><br>
+                            Status: ${response.status}<br>
+                            Message: ${data.message || data.error || 'Erreur inconnue'}<br>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `);
+                    showError(`Erreur ${response.status} sur test complet`, data);
+                }
+            } catch (error) {
+                showResult('fullResult', `
+                    <div class="error">
+                        ❌ Erreur réseau: ${error.message}
+                    </div>
+                `, 'error');
+                console.error('Erreur:', error);
+            }
+        }
+
+        async function testCategories() {
+            showResult('categoryResult', '⏳ Test des catégories en cours...', 'result');
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showResult('categoryResult', '❌ Vous devez être connecté', 'error');
+                return;
+            }
+
+            const categories = ['ELECTRONICS', 'FASHION', 'HOME', 'BEAUTY', 'SPORTS', 'TOYS', 'BOOKS', 'OTHER'];
+            let results = '<div class="result">';
+
+            for (const category of categories) {
+                const testData = {
+                    name: `Test ${category}`,
+                    description: `Test de la catégorie ${category}`,
+                    price: 1000,
+                    stock: 1,
+                    category: category,
+                    images: ["https://via.placeholder.com/400"]
+                };
+
+                try {
+                    const response = await fetch(`${API_URL}/products`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(testData)
+                    });
+
+                    if (response.ok) {
+                        results += `✅ <strong>${category}</strong>: Succès<br>`;
+                    } else {
+                        const data = await response.json();
+                        results += `❌ <strong>${category}</strong>: Échec (${response.status}) - ${data.message || data.error}<br>`;
+                    }
+                } catch (error) {
+                    results += `❌ <strong>${category}</strong>: Erreur réseau - ${error.message}<br>`;
+                }
+            }
+
+            results += '</div>';
+            showResult('categoryResult', results);
+        }
+
+        // Auto-vérification au chargement
+        window.onload = () => {
+            checkAuth();
+        };
+    </script>
+</body>
+</html>
