@@ -34,7 +34,8 @@ export default function NewProduct() {
       width: '',
       height: ''
     },
-    shippingFee: '1000'
+    shippingFee: '1000',
+    attributes: {}
   });
 
   // Validation en temps réel
@@ -92,6 +93,119 @@ export default function NewProduct() {
     { value: 'Autre', label: 'Autre', icon: '📦' },
   ];
 
+  // Attributs par catégorie (alignés avec backend)
+  const categoryAttributes = {
+    'Électronique': {
+      required: [
+        { name: 'marque', label: 'Marque', placeholder: 'Ex: Samsung, Apple...' },
+        { name: 'modele', label: 'Modèle', placeholder: 'Ex: Galaxy S21...' }
+      ],
+      optional: [
+        { name: 'couleur', label: 'Couleur', placeholder: 'Ex: Noir, Blanc...' },
+        { name: 'memoire', label: 'Mémoire', placeholder: 'Ex: 128GB, 256GB...' },
+        { name: 'ecran', label: 'Taille écran', placeholder: 'Ex: 6.5 pouces...' },
+        { name: 'systeme', label: 'Système', placeholder: 'Ex: Android, iOS...' }
+      ]
+    },
+    'Vêtements': {
+      required: [
+        { name: 'taille', label: 'Taille', placeholder: 'Ex: S, M, L, XL...' },
+        { name: 'couleur', label: 'Couleur', placeholder: 'Ex: Bleu, Rouge...' },
+        { name: 'genre', label: 'Genre', placeholder: 'Homme, Femme, Unisexe' }
+      ],
+      optional: [
+        { name: 'matiere', label: 'Matière', placeholder: 'Ex: Coton, Polyester...' },
+        { name: 'marque', label: 'Marque', placeholder: 'Ex: Nike, Adidas...' },
+        { name: 'saison', label: 'Saison', placeholder: 'Été, Hiver, Mi-saison' }
+      ]
+    },
+    'Maison': {
+      required: [
+        { name: 'type', label: 'Type', placeholder: 'Ex: Meuble, Décoration...' },
+        { name: 'matiere', label: 'Matière', placeholder: 'Ex: Bois, Métal, Plastique...' }
+      ],
+      optional: [
+        { name: 'couleur', label: 'Couleur', placeholder: 'Ex: Blanc, Noir...' },
+        { name: 'marque', label: 'Marque', placeholder: 'Ex: IKEA, Maison du Monde...' }
+      ]
+    },
+    'Beauté': {
+      required: [
+        { name: 'type', label: 'Type', placeholder: 'Ex: Parfum, Crème, Maquillage...' },
+        { name: 'marque', label: 'Marque', placeholder: 'Ex: L\'Oréal, Nivea...' }
+      ],
+      optional: [
+        { name: 'volume', label: 'Volume', placeholder: 'Ex: 50ml, 100ml...' },
+        { name: 'ingredients', label: 'Ingrédients', placeholder: 'Principaux ingrédients...' },
+        { name: 'peau', label: 'Type de peau', placeholder: 'Normale, Sèche, Grasse...' }
+      ]
+    },
+    'Sport': {
+      required: [
+        { name: 'type', label: 'Type', placeholder: 'Ex: Vêtement, Équipement...' },
+        { name: 'marque', label: 'Marque', placeholder: 'Ex: Nike, Adidas...' }
+      ],
+      optional: [
+        { name: 'taille', label: 'Taille', placeholder: 'Ex: S, M, L...' },
+        { name: 'couleur', label: 'Couleur', placeholder: 'Ex: Bleu, Noir...' },
+        { name: 'materiau', label: 'Matériau', placeholder: 'Ex: Polyester, Coton...' }
+      ]
+    },
+    'Livres': {
+      required: [
+        { name: 'auteur', label: 'Auteur', placeholder: 'Nom de l\'auteur' },
+        { name: 'editeur', label: 'Éditeur', placeholder: 'Maison d\'édition' }
+      ],
+      optional: [
+        { name: 'isbn', label: 'ISBN', placeholder: 'Ex: 978-2-1234-5680-3' },
+        { name: 'langue', label: 'Langue', placeholder: 'Français, Anglais...' },
+        { name: 'nombrePages', label: 'Nombre de pages', placeholder: 'Ex: 350' }
+      ]
+    },
+    'Jouets': {
+      required: [
+        { name: 'type', label: 'Type', placeholder: 'Ex: Peluche, Jeu de société...' },
+        { name: 'marque', label: 'Marque', placeholder: 'Ex: Lego, Mattel...' },
+        { name: 'ageMin', label: 'Âge minimum', placeholder: 'Ex: 3 ans, 6 ans...' }
+      ],
+      optional: [
+        { name: 'couleur', label: 'Couleur', placeholder: 'Ex: Multicolore...' },
+        { name: 'materiau', label: 'Matériau', placeholder: 'Ex: Plastique, Bois...' },
+        { name: 'nombrePieces', label: 'Nombre de pièces', placeholder: 'Ex: 500 pièces' }
+      ]
+    },
+    'Automobile': {
+      required: [
+        { name: 'marque', label: 'Marque', placeholder: 'Ex: Toyota, BMW...' },
+        { name: 'modele', label: 'Modèle', placeholder: 'Ex: Corolla, Série 3...' },
+        { name: 'annee', label: 'Année', placeholder: 'Ex: 2020, 2021...' }
+      ],
+      optional: [
+        { name: 'couleur', label: 'Couleur', placeholder: 'Ex: Noir, Blanc...' },
+        { name: 'carburant', label: 'Carburant', placeholder: 'Essence, Diesel, Électrique...' },
+        { name: 'kilometrage', label: 'Kilométrage', placeholder: 'Ex: 50000 km' }
+      ]
+    },
+    'Alimentation': {
+      required: [
+        { name: 'marque', label: 'Marque', placeholder: 'Nom de la marque' },
+        { name: 'paysOrigin', label: 'Pays d\'origine', placeholder: 'Ex: France, Italie...' }
+      ],
+      optional: [
+        { name: 'poids', label: 'Poids net', placeholder: 'Ex: 500g, 1kg...' },
+        { name: 'ingredients', label: 'Ingrédients', placeholder: 'Liste des ingrédients' },
+        { name: 'allergenes', label: 'Allergènes', placeholder: 'Ex: Gluten, Lactose...' }
+      ]
+    },
+    'Autre': {
+      required: [],
+      optional: []
+    }
+  };
+
+  // Obtenir les attributs de la catégorie sélectionnée
+  const currentCategoryAttributes = categoryAttributes[formData.category] || { required: [], optional: [] };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -133,6 +247,9 @@ export default function NewProduct() {
         category: formData.category,
         images: formData.images.filter(img => img.trim() !== ''),
         shippingFee: parseFloat(formData.shippingFee) || 1000,
+
+        // Ajouter les attributs spécifiques à la catégorie
+        attributes: formData.attributes,
 
         // Ajouter les champs optionnels seulement s'ils sont définis
         ...(formData.weight && { weight: parseFloat(formData.weight) }),
@@ -291,6 +408,25 @@ export default function NewProduct() {
     setFormData({ ...formData, images: newImages });
   };
 
+  // Gestion des attributs dynamiques
+  const handleAttributeChange = (attributeName, value) => {
+    setFormData({
+      ...formData,
+      attributes: {
+        ...formData.attributes,
+        [attributeName]: value
+      }
+    });
+  };
+
+  // Réinitialiser les attributs quand la catégorie change
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      attributes: {}
+    }));
+  }, [formData.category]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
@@ -411,6 +547,73 @@ export default function NewProduct() {
                 </div>
               </div>
             </div>
+
+            {/* Détails du Produit (Attributs dynamiques selon catégorie) */}
+            {(currentCategoryAttributes.required.length > 0 || currentCategoryAttributes.optional.length > 0) && (
+              <div className="bg-purple-50 border border-purple-100 rounded-xl p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Tag className="w-5 h-5 text-purple-600" />
+                  Détails du produit
+                </h2>
+
+                {/* Attributs requis */}
+                {currentCategoryAttributes.required.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                      <span className="text-red-500">*</span>
+                      Informations obligatoires
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {currentCategoryAttributes.required.map((attr) => (
+                        <div key={attr.name}>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            {attr.label} <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            placeholder={attr.placeholder}
+                            value={formData.attributes[attr.name] || ''}
+                            onChange={(e) => handleAttributeChange(attr.name, e.target.value)}
+                            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Attributs optionnels */}
+                {currentCategoryAttributes.optional.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-700 mb-3">
+                      Informations complémentaires (optionnel)
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {currentCategoryAttributes.optional.map((attr) => (
+                        <div key={attr.name}>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            {attr.label}
+                          </label>
+                          <input
+                            type="text"
+                            placeholder={attr.placeholder}
+                            value={formData.attributes[attr.name] || ''}
+                            onChange={(e) => handleAttributeChange(attr.name, e.target.value)}
+                            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-4 p-3 bg-purple-100 rounded-lg">
+                  <p className="text-xs text-purple-800">
+                    💡 Les détails spécifiques aident les acheteurs à mieux comprendre votre produit
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Prix et Stock */}
             <div className="bg-green-50 border border-green-100 rounded-xl p-6">
