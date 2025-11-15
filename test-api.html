@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test API CORS</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    button {
+      background: #000;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-right: 10px;
+    }
+    button:hover {
+      background: #333;
+    }
+    .success {
+      color: #059669;
+      background: #d1fae5;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+    .error {
+      color: #dc2626;
+      background: #fee2e2;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+    pre {
+      background: #1f2937;
+      color: #f3f4f6;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 12px;
+    }
+    .info {
+      background: #dbeafe;
+      color: #1e40af;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔧 Test API & CORS</h1>
+
+  <div class="info">
+    <strong>Frontend actuel :</strong> <span id="current-origin"></span><br>
+    <strong>API Backend :</strong> https://ecommerce-backend-deploy.vercel.app/api
+  </div>
+
+  <div class="test-card">
+    <h2>Test 1 : GET /api/products</h2>
+    <button onclick="testProducts()">Tester</button>
+    <div id="products-result"></div>
+  </div>
+
+  <div class="test-card">
+    <h2>Test 2 : Vérifier les headers CORS</h2>
+    <button onclick="testCORS()">Vérifier CORS</button>
+    <div id="cors-result"></div>
+  </div>
+
+  <div class="test-card">
+    <h2>Test 3 : Test avec fetch() natif</h2>
+    <button onclick="testFetch()">Tester Fetch</button>
+    <div id="fetch-result"></div>
+  </div>
+
+  <script>
+    const API_URL = 'https://ecommerce-backend-deploy.vercel.app/api';
+
+    document.getElementById('current-origin').textContent = window.location.origin;
+
+    async function testProducts() {
+      const resultDiv = document.getElementById('products-result');
+      resultDiv.innerHTML = '<p>⏳ Test en cours...</p>';
+
+      try {
+        const response = await fetch(`${API_URL}/products`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        resultDiv.innerHTML = `
+          <div class="success">
+            <strong>✅ Succès !</strong><br>
+            ${data.products?.length || 0} produits chargés
+          </div>
+          <pre>${JSON.stringify(data, null, 2).substring(0, 500)}...</pre>
+        `;
+      } catch (error) {
+        resultDiv.innerHTML = `
+          <div class="error">
+            <strong>❌ Erreur</strong><br>
+            ${error.message}
+          </div>
+          <pre>Type d'erreur: ${error.name}
+Message: ${error.message}
+
+Si vous voyez "Failed to fetch" ou "CORS",
+c'est que le backend bloque les requêtes depuis ce domaine.
+
+SOLUTION: Configurer CORS sur le backend Vercel
+(voir CORS_FIX_BACKEND.md)</pre>
+        `;
+      }
+    }
+
+    async function testCORS() {
+      const resultDiv = document.getElementById('cors-result');
+      resultDiv.innerHTML = '<p>⏳ Vérification CORS...</p>';
+
+      try {
+        const response = await fetch(`${API_URL}/products`, {
+          method: 'OPTIONS',
+          headers: {
+            'Origin': window.location.origin,
+            'Access-Control-Request-Method': 'GET',
+            'Access-Control-Request-Headers': 'Content-Type, Authorization'
+          }
+        });
+
+        const corsHeaders = {
+          'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+          'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods'),
+          'Access-Control-Allow-Headers': response.headers.get('Access-Control-Allow-Headers'),
+          'Access-Control-Allow-Credentials': response.headers.get('Access-Control-Allow-Credentials'),
+        };
+
+        const allowOrigin = corsHeaders['Access-Control-Allow-Origin'];
+
+        if (allowOrigin === window.location.origin || allowOrigin === '*') {
+          resultDiv.innerHTML = `
+            <div class="success">
+              <strong>✅ CORS configuré correctement</strong><br>
+              Origin autorisée: ${allowOrigin}
+            </div>
+            <pre>${JSON.stringify(corsHeaders, null, 2)}</pre>
+          `;
+        } else {
+          resultDiv.innerHTML = `
+            <div class="error">
+              <strong>❌ CORS mal configuré</strong><br>
+              Origin actuelle: ${window.location.origin}<br>
+              Origin autorisée: ${allowOrigin || 'AUCUNE'}
+            </div>
+            <pre>${JSON.stringify(corsHeaders, null, 2)}</pre>
+            <p><strong>Solution :</strong> Le backend doit autoriser "${window.location.origin}"</p>
+          `;
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `
+          <div class="error">
+            <strong>❌ Impossible de vérifier CORS</strong><br>
+            ${error.message}
+          </div>
+        `;
+      }
+    }
+
+    async function testFetch() {
+      const resultDiv = document.getElementById('fetch-result');
+      resultDiv.innerHTML = '<p>⏳ Test fetch() natif...</p>';
+
+      const tests = [
+        { method: 'GET', endpoint: '/products', desc: 'Liste produits' },
+        { method: 'GET', endpoint: '/auth/me', desc: 'User actuel (401 attendu)' },
+      ];
+
+      let html = '';
+
+      for (const test of tests) {
+        try {
+          const response = await fetch(`${API_URL}${test.endpoint}`, {
+            method: test.method,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+
+          const status = response.status;
+          const statusText = response.statusText;
+
+          if (status === 200) {
+            html += `<div class="success">✅ ${test.desc}: ${status} ${statusText}</div>`;
+          } else if (status === 401 || status === 403) {
+            html += `<div style="background: #fef3c7; color: #92400e; padding: 10px; border-radius: 4px; margin-top: 10px;">
+              ⚠️ ${test.desc}: ${status} ${statusText} (normal si non authentifié)
+            </div>`;
+          } else {
+            html += `<div class="error">❌ ${test.desc}: ${status} ${statusText}</div>`;
+          }
+        } catch (error) {
+          html += `<div class="error">❌ ${test.desc}: ${error.message}</div>`;
+        }
+      }
+
+      resultDiv.innerHTML = html;
+    }
+
+    // Auto-test au chargement
+    window.addEventListener('load', () => {
+      console.log('🔧 Page de test chargée');
+      console.log('Origin:', window.location.origin);
+      console.log('API URL:', API_URL);
+    });
+  </script>
+</body>
+</html>

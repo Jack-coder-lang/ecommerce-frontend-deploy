@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Créer Compte Admin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .step {
+            background: #e3f2fd;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #2196F3;
+            border-radius: 4px;
+        }
+        .success {
+            background: #c8e6c9;
+            border-left-color: #4CAF50;
+        }
+        .error {
+            background: #ffcdd2;
+            border-left-color: #f44336;
+        }
+        button {
+            background: #2196F3;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+        }
+        button:hover {
+            background: #1976D2;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+        #result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔑 Créer un Compte Administrateur</h1>
+
+        <div class="step">
+            <h3>Étape 1: Créer le compte admin</h3>
+            <p>Remplissez ce formulaire pour créer un compte administrateur</p>
+
+            <label>Email:</label>
+            <input type="email" id="email" value="admin@ecommerce.com" placeholder="admin@ecommerce.com">
+
+            <label>Prénom:</label>
+            <input type="text" id="firstName" value="Admin" placeholder="Admin">
+
+            <label>Nom:</label>
+            <input type="text" id="lastName" value="Principal" placeholder="Principal">
+
+            <label>Téléphone:</label>
+            <input type="text" id="phone" value="+22500000000" placeholder="+225XXXXXXXXX">
+
+            <label>Mot de passe:</label>
+            <input type="password" id="password" value="admin123" placeholder="Minimum 6 caractères">
+
+            <button onclick="createAdmin()">Créer le Compte Admin</button>
+        </div>
+
+        <div id="result"></div>
+
+        <div class="step" id="step2" style="display: none;">
+            <h3>Étape 2: Connexion en Admin</h3>
+            <p>Utilisez ces identifiants pour vous connecter:</p>
+            <p><strong>Email:</strong> <span id="adminEmail"></span></p>
+            <p><strong>Mot de passe:</strong> <span id="adminPass"></span></p>
+            <button onclick="window.location.href='http://localhost:5176/login'">Aller à la page de connexion</button>
+        </div>
+
+        <div class="step">
+            <h3>Étape 3: Approuver le vendeur</h3>
+            <ol>
+                <li>Connectez-vous avec le compte admin</li>
+                <li>Allez sur <strong>/admin</strong></li>
+                <li>Approuvez le vendeur <strong>kouassi@gmail.com</strong></li>
+                <li>Reconnectez-vous avec le compte vendeur</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://ecommerce-backend-deploy.vercel.app/api';
+
+        async function createAdmin() {
+            const email = document.getElementById('email').value;
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+
+            if (!email || !firstName || !lastName || !phone || !password) {
+                showResult('Veuillez remplir tous les champs', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showResult('Le mot de passe doit contenir au moins 6 caractères', 'error');
+                return;
+            }
+
+            showResult('Création du compte en cours...', 'step');
+
+            try {
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password,
+                        firstName,
+                        lastName,
+                        phone,
+                        role: 'ADMIN',
+                        address: {
+                            street: 'Admin',
+                            city: 'Admin',
+                            country: 'Côte d\'Ivoire',
+                            postalCode: '00000'
+                        }
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult('✅ Compte admin créé avec succès !', 'success');
+                    document.getElementById('adminEmail').textContent = email;
+                    document.getElementById('adminPass').textContent = password;
+                    document.getElementById('step2').style.display = 'block';
+                } else {
+                    if (data.message && data.message.includes('déjà utilisé')) {
+                        showResult('⚠️ Ce compte admin existe déjà. Utilisez-le directement pour vous connecter.', 'success');
+                        document.getElementById('adminEmail').textContent = email;
+                        document.getElementById('adminPass').textContent = password;
+                        document.getElementById('step2').style.display = 'block';
+                    } else {
+                        showResult('❌ Erreur: ' + (data.message || 'Erreur inconnue'), 'error');
+                    }
+                }
+            } catch (error) {
+                showResult('❌ Erreur réseau: ' + error.message, 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        function showResult(message, type) {
+            const result = document.getElementById('result');
+            result.innerHTML = `<div class="step ${type}">${message}</div>`;
+        }
+    </script>
+</body>
+</html>

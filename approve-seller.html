@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approuver Vendeur - Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #1a202c;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #718096;
+            margin-bottom: 24px;
+        }
+        .step {
+            background: #f7fafc;
+            border-left: 4px solid #4299e1;
+            padding: 16px;
+            margin: 16px 0;
+            border-radius: 4px;
+        }
+        .step h3 {
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        .step p {
+            color: #4a5568;
+            line-height: 1.6;
+        }
+        .credentials {
+            background: #edf2f7;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 8px 0;
+        }
+        .credentials strong {
+            color: #2d3748;
+        }
+        .btn {
+            display: inline-block;
+            background: #4299e1;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 16px;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
+        }
+        .warning {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+            padding: 16px;
+            margin: 16px 0;
+            border-radius: 4px;
+        }
+        .warning p {
+            color: #742a2a;
+        }
+        .success {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+            padding: 16px;
+            margin: 16px 0;
+            border-radius: 4px;
+        }
+        .success p {
+            color: #22543d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Approbation du Compte Vendeur</h1>
+        <p class="subtitle">Suivez ces étapes pour approuver votre compte vendeur et pouvoir ajouter des produits</p>
+
+        <div class="warning">
+            <p><strong>⚠️ Problème actuel :</strong> Votre compte vendeur est en statut <code>PENDING</code> et doit être approuvé par un administrateur avant de pouvoir ajouter des produits.</p>
+        </div>
+
+        <div class="step">
+            <h3>📌 Étape 1 : Connexion Admin</h3>
+            <p>Connectez-vous avec le compte administrateur :</p>
+            <div class="credentials">
+                <strong>Email :</strong> admin@test.com<br>
+                <strong>Mot de passe :</strong> 123456
+            </div>
+            <a href="http://localhost:5173/login" class="btn" target="_blank">🔗 Ouvrir la page de connexion</a>
+        </div>
+
+        <div class="step">
+            <h3>📌 Étape 2 : Accéder au Panel Admin</h3>
+            <p>Une fois connecté en tant qu'admin, accédez au panel d'administration :</p>
+            <a href="http://localhost:5173/admin" class="btn" target="_blank">👑 Ouvrir le Panel Admin</a>
+        </div>
+
+        <div class="step">
+            <h3>📌 Étape 3 : Approuver le Vendeur</h3>
+            <p>Dans le panel admin, vous verrez la liste des utilisateurs en attente d'approbation. Trouvez votre compte vendeur et cliquez sur <strong>"Approuver"</strong>.</p>
+            <p style="margin-top: 12px;">Comptes vendeurs de test disponibles :</p>
+            <div class="credentials">
+                <strong>Vendeur 1 :</strong> vendeur@test.com / 123456<br>
+                <strong>Vendeur 2 :</strong> vendeur2@test.com / 123456
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>📌 Étape 4 : Se Reconnecter en Vendeur</h3>
+            <p>Déconnectez-vous du compte admin, puis reconnectez-vous avec votre compte vendeur approuvé.</p>
+        </div>
+
+        <div class="success">
+            <p><strong>✅ Après approbation :</strong> Vous pourrez accéder à <code>/seller/products/new</code> et ajouter des produits sans problème !</p>
+        </div>
+
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 2px solid #e2e8f0;">
+            <h3 style="color: #2d3748; margin-bottom: 12px;">🔧 Alternative : Approuver via Backend</h3>
+            <p style="color: #4a5568; margin-bottom: 12px;">Si vous préférez, vous pouvez approuver directement via l'API :</p>
+            <div class="credentials" style="background: #1a202c; color: #48bb78;">
+                <code>
+                # 1. Login admin pour obtenir le token<br>
+                curl -X POST https://ecommerce-backend-deploy.vercel.app/api/auth/login \<br>
+                &nbsp;&nbsp;-H "Content-Type: application/json" \<br>
+                &nbsp;&nbsp;-d '{"email":"admin@test.com","password":"123456"}'<br>
+                <br>
+                # 2. Approuver le vendeur (utilisez le token reçu)<br>
+                curl -X PATCH https://ecommerce-backend-deploy.vercel.app/api/admin/users/{USER_ID}/approve \<br>
+                &nbsp;&nbsp;-H "Authorization: Bearer {TOKEN}"
+                </code>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
